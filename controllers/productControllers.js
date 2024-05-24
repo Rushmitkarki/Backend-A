@@ -1,4 +1,5 @@
 const path = require("path");
+const productModel = require("../models/productModel");
 const createProduct = async (req, res) => {
   //  check incommin g data
 
@@ -46,7 +47,22 @@ const createProduct = async (req, res) => {
   // move to that directory(await , try catch)
   try {
     await productImage.mv(imageUploadPath);
-    res.send("File uploaded successfully");
+
+    //  save the data to the database
+
+    const newProduct = new productModel({
+      productName: productName,
+      productPrice: productPrice,
+      productCategory: productCategory,
+      productDescription: productDescription,
+      productImage: imageName,
+    });
+    const product = await newProduct.save();
+    res.status(200).json({
+      success: true,
+      message: "Product created successfully",
+      product: product,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
