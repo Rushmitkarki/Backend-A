@@ -26,7 +26,7 @@ const createProduct = async (req, res) => {
   }
   //  vallidation the imge
   if (!req.files || !req.files.productImage) {
-    return res.status(400).json({
+    return res.json({
       success: false,
       message: "Please upload the image",
     });
