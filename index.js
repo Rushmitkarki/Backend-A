@@ -15,6 +15,10 @@ app.use(express.json());
 //  config form data
 app.use(acceptFormData());
 
+
+// majke a static punlic folder
+app.use(express.static("./public"));
+
 // dotenv Confurigation
 dotenv.config();
 
@@ -53,6 +57,7 @@ app.get("/hello", (req, res) => {
 
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/product", require("./routes/productRoutes"));
+
 
 //  Starting the server
 
