@@ -1,5 +1,6 @@
 const path = require("path");
 const productModel = require("../models/productModel");
+const fs = require("fs"); // fs vaneko file system
 
 const createProduct = async (req, res) => {
   console.log(req.body);
@@ -117,9 +118,75 @@ const getOneProduct = async (req, res) => {
     });
   }
 };
+// delete product
 
+// update product
+// 1.get product id(comes from url)
+
+// 2. if image:
+// 3. new umage should be upload
+// 4. old image should be delete
+// 5 . find product(database) product image
+// 6. find that image in directory
+// 7. Delete
+// 9. update that product
 const updateProduct = async (req, res) => {
-  res.send("Update Product");
+  try {
+    // if there is image
+    if (req.files && req.files.productImage) {
+      // destructuring
+      const { productImage } = req.files;
+
+      // upload image to /public/product folder
+      const imageName = `${Date.now()}-${productImage.name}`;
+
+      // 2. Make a upload path (/path/upload - directory)
+      const imageUploadPath = path.join(
+        __dirname,
+        `../public/products/${imageName}`
+      );
+
+      // move to folder
+
+      await productImage.mv(imageUploadPath);
+
+      // req.params (id), req.body update data(product name, prod price , pc , pd) req.files(image)
+      // add new field to req.body(prductImage -> name)
+      req.body.productImage = imageName; //image  uploadeed (generated name)
+
+      // if image is upoloaded and rew.body is assingned
+
+      if (req.body.productImage) {
+        // finding the existing product
+        const existingProduct = await productModel.findById(req.params.id);
+        // searching in folder
+        const oldImagePath = path.join(
+          __dirname,
+          `../public/products/${existingProduct.productImage}`
+        );
+        // delete from filesystem
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    // update the data
+    const updateProduct = await productModel.findByIdAndUpdate(
+      req.params.id,
+      req.body
+    );
+    res.status(201).json({
+      success: true,
+      message: " product updated!",
+      product: updateProduct,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error !",
+      error: error,
+    });
+  }
 };
 
 module.exports = {
