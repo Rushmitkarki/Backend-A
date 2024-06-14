@@ -59,7 +59,6 @@ const createUser = async (req, res) => {
       message: "Internal server error",
     });
   }
-  
 };
 
 //  Write a logic for login
@@ -109,7 +108,7 @@ const loginUser = async (req, res) => {
     }
     // token (generate with user Data + secret key)
     //  to generate token
-    const token = await jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    const token = await jwt.sign({ id: user._id, isAdmin : user.isAdmin }, process.env.JWT_SECRET);
 
     // response(token, user data )
     res.json({
@@ -121,6 +120,7 @@ const loginUser = async (req, res) => {
         lastName: user.lastName,
         email: user.email,
         id: user._id,
+        isAdmin: user.isAdmin,
       },
     });
 

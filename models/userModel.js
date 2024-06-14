@@ -15,7 +15,14 @@ const userSchema = new mongoose.Schema({
     password: {
         type : String,
         requires : true,
+    },
+    // defining the role for admin 
+    isAdmin :{
+        type : Boolean,
+        default : false,    
+    
     }
+
 
 })
 const User = mongoose.model('users', userSchema)
