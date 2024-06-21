@@ -64,3 +64,6 @@ app.use("/api/product", require("./routes/productRoutes"));
 app.listen(PORT, () => {
   console.log(`Serverrrr is running on PORT ${PORT}...`);
 });
+
+// exporting
+module.exports = app;

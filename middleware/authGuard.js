@@ -24,7 +24,7 @@ const authGuard = (req, res, next) => {
       message: "Please provide a token",
     });
   }
-
+  
   // if token is found then verify
   try {
     const decodeUserData = jwt.verify(token, process.env.JWT_SECRET);

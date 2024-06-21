@@ -26,7 +26,7 @@ const createUser = async (req, res) => {
     if (existingUser) {
       return res.json({
         success: false,
-        message: "user Already Exists.... ",
+        message: "user Already Exists....",
       });
     }
     //  Hashing or encyption the password
@@ -90,7 +90,7 @@ const loginUser = async (req, res) => {
 
     // not found (error message)
     if (!user) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "User not found...",
       });
@@ -101,17 +101,20 @@ const loginUser = async (req, res) => {
 
     // not match (error message)
     if (!isValidPassword) {
-      return res.json({
+      return res.status(300).json({
         success: false,
         message: "Invalid Password...",
       });
     }
     // token (generate with user Data + secret key)
     //  to generate token
-    const token = await jwt.sign({ id: user._id, isAdmin : user.isAdmin }, process.env.JWT_SECRET);
+    const token = await jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      process.env.JWT_SECRET
+    );
 
     // response(token, user data )
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Login Success",
       token: token,

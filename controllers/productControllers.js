@@ -80,7 +80,7 @@ const getAllProducts = async (req, res) => {
         const allProducts = await productModel.find({})
         res.status(201).json({
             "success": true,
-            "message": "Product Created Successfully",
+            "message": "Product Fetched Successfully",
             "products": allProducts
         })
 
