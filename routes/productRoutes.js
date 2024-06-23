@@ -5,7 +5,7 @@ const { authGuard, adminGuard } = require("../middleware/authGuard");
 router.post("/create", productController.createProduct);
 
 // fetch all products
-router.get("/get_all_products", productController.getAllProducts);
+router.get("/get_all_products",authGuard, productController.getAllProducts);
 
 // fetch single products
 router.get(
@@ -23,5 +23,8 @@ router.delete(
 
 //update product
 router.put("/update_product/:id", adminGuard, productController.updateProduct);
+// pagination qury params ? page=1
+
+router.get("/pagination", productController.paginationProducts);
 
 module.exports = router;

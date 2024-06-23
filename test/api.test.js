@@ -3,6 +3,10 @@ const request = require("supertest");
 // import server file
 const app = require("../index");
 
+// text token (for admin)
+const token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY2NjkyOWRkOWMwY2VmOGRlOTFmOWU3ZSIsImlzQWRtaW4iOmZhbHNlLCJpYXQiOjE3MTkxMTY4NTl9.HcNza5_ZulcXGtwwTDB9-dEs5j_RK9zuzw1gfbgiHqU";
+
 describe("Testing API", () => {
   //Testing '/test' api
   it("Get /test | Response with text", async () => {
@@ -15,7 +19,9 @@ describe("Testing API", () => {
 
   //   get all products
   it("GET Products | Fetch all products", async () => {
-    const response = await request(app).get("/api/product/get_all_products");
+    const response = await request(app)
+      .get("/api/product/get_all_products")
+      .set("authorization", `Bearer ${token}`);
     expect(response.statusCode).toBe(201);
     expect(response.body).toBeDefined();
     expect(response.body.message).toEqual("Product Fetched Successfully");
