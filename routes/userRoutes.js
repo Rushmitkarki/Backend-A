@@ -1,15 +1,16 @@
 const router = require("express").Router();
 const userController = require("../controllers/userControllers");
 
-// Creating user resgistration route
-
+// Creating user registration route
 router.post("/create", userController.createUser);
 
 // Creating user login route
 router.post("/login", userController.loginUser);
 
-// Controller (Export) -Routes (import)- use = ( index.js)
+// Creating user forgot password route
+router.post("/forgot-password", userController.forgotPassword);
 
-// Exporting the routes
+// Creating user reset password route
+router.post("/reset-password", userController.resetPassword);
 
 module.exports = router;

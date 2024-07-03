@@ -1,34 +1,20 @@
-// Importing the package (Express package)
+// Importing the packages (express)
 const express = require("express");
 const connectDatabase = require("./database/database");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const acceptFormData = require("express-fileupload");
+const accessFromData = require("express-fileupload");
 
-// creataing an express application
-
+// Creating an express app
 const app = express();
 
-//  Express json configuration
+// Express Json Config
 app.use(express.json());
 
-//  config form data
-app.use(acceptFormData());
-
-
-// majke a static punlic folder
 app.use(express.static("./public"));
 
-// dotenv Confurigation
-dotenv.config();
-
-// Connecting to database
-
-connectDatabase();
-
-// Defining the port
-
-const PORT = process.env.PORT;
+// express fileupload
+app.use(accessFromData());
 
 //  cors configuration
 const corsOptions = {
@@ -38,32 +24,31 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
+// dotenv Configuration
+dotenv.config();
+
+// Connecting to database
+connectDatabase();
+
+// Defining the port
+const PORT = process.env.PORT;
+
 // Making a test endpoint
-// Endpoint : Post, GET, PUT, DElETE
-// need path in get
-
-//
-
+// Endpoints : POST, GET, PUT , DELETE
 app.get("/test", (req, res) => {
-  res.send("Test API is working.....");
+  res.send("Test API is Working!....");
 });
 
-app.get("/hello", (req, res) => {
-  res.send("This is the second page......");
-});
-// http://localhost:5000/api/user
-
-// configuring Routes of user
-
+// Configuring Routes of User
 app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/product", require("./routes/productRoutes"));
 
+// http://localhost:5000/api/user
+// http://localhost:5000/test
 
-//  Starting the server
-
+// Starting the server (always at the last)
 app.listen(PORT, () => {
-  console.log(`Serverrrr is running on PORT ${PORT}...`);
+  console.log(`Server is running on port ${PORT}....`);
 });
 
-// exporting
 module.exports = app;

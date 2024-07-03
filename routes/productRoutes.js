@@ -3,28 +3,11 @@ const productController = require("../controllers/productControllers");
 const { authGuard, adminGuard } = require("../middleware/authGuard");
 
 router.post("/create", productController.createProduct);
-
-// fetch all products
-router.get("/get_all_products",authGuard, productController.getAllProducts);
-
-// fetch single products
-router.get(
-  "/get_single_products/:id",
-  authGuard,
-  productController.getSingleProduct
-);
-
-//delete product
-router.delete(
-  "/delete_product/:id",
-  adminGuard,
-  productController.deleteProduct
-);
-
-//update product
+router.get("/get_all_products", authGuard, productController.getAllProducts);
+router.get("/get_one_product/:id", authGuard, productController.getOneProduct);
 router.put("/update_product/:id", adminGuard, productController.updateProduct);
-// pagination qury params ? page=1
-
-router.get("/pagination", productController.paginationProducts);
+router.delete("/delete/:id", adminGuard, productController.deleteProduct);
+router.get("/get_paginated_products", productController.getProductsPagination);
+router.get("/get_products_count", productController.getProductCount);
 
 module.exports = router;

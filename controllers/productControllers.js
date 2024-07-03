@@ -1,245 +1,253 @@
-const path = require("path");
-const productModel = require("../models/productModel");
-const Product = require("../models/productModel");
-const fs = require("fs");
+const path = require('path');
+const productModel = require('../models/productModel');
+const fs = require('fs');
 
 const createProduct = async (req, res) => {
-  //check incoming data
   console.log(req.body);
   console.log(req.files);
 
-  //destructuring the body data (json)
-  const { productName, productPrice, productCategory, productDescription } =
+  //  Destructuring the body
+  const { productName, productCategory, productDescription, productPrice } =
     req.body;
 
-  //Validation (task)
+  // Validating the data
   if (
     !productName ||
-    !productPrice ||
     !productCategory ||
-    !productDescription
+    !productDescription ||
+    !productPrice
   ) {
     return res.status(400).json({
       success: false,
-      message: "Please enter all fields",
+      message: 'Please enter all fields!',
     });
   }
-  //validate if there is image
+
+  // Validating the image
   if (!req.files || !req.files.productImage) {
     return res.status(400).json({
       success: false,
-      message: "Image not found",
+      message: 'Please upload an image!',
     });
   }
 
   const { productImage } = req.files;
 
-  //upload image
-  // 1. Generate new image name (abc.png) -> (21324-abc.png)
+  //  Upload the image
+  // 1. Generate new image name
   const imageName = `${Date.now()}-${productImage.name}`;
 
-  // 2. Make a upload path(/path/upload- directory)
+  // 2. Make a upload path (/path/upload - directory)
   const imageUploadPath = path.join(
     __dirname,
     `../public/products/${imageName}`
   );
 
-  // 3. Move to that directory (await, try-catch)
+  // 3, Move to that directory (await, try catch)
   try {
     await productImage.mv(imageUploadPath);
 
-    // save to database
+    // save the product to database
+
     const newProduct = new productModel({
       productName: productName,
-      productPrice: productPrice,
       productCategory: productCategory,
       productDescription: productDescription,
+      productPrice: productPrice,
       productImage: imageName,
     });
+
     const product = await newProduct.save();
+
     res.status(201).json({
       success: true,
-      message: "Product created successfully",
+      message: 'Product created successfully',
       data: product,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: "Internal Server Error",
-      error: error,
+      message: 'Internal server error',
+      error: 'error',
     });
   }
 };
 
 // Fetch all products
 const getAllProducts = async (req, res) => {
-  //try catch
   try {
     const allProducts = await productModel.find({});
+
     res.status(201).json({
       success: true,
-      message: "Product Fetched Successfully",
+      message: 'All products fetched successfully',
       products: allProducts,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: "Interval server error",
+      message: 'Internal server error',
       error: error,
     });
   }
 };
 
-// fetch single products
-const getSingleProduct = async (req, res) => {
-  // get product id from url (params)
-  const productId = req.params.id;
-
-  //find
+// Get one product
+const getOneProduct = async (req, res) => {
   try {
-    const product = await Product.findById(productId);
+    const product = await productModel.findById(req.params.id);
     if (!product) {
-      res.status(400).json({
+      return res.status(404).json({
         success: false,
-        message: "No Product Found",
+        message: 'Product not found',
       });
     }
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "Product fetched",
+      message: 'Product fetched successfully',
       product: product,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: "Interval server error",
+      message: 'Internal server error',
       error: error,
     });
   }
 };
-
-//delete product
-const deleteProduct = async (req, res) => {
-  try {
-    await productModel.findByIdAndDelete(req.params.id);
-    res.status(201).json({
-      success: true,
-      message: "Product Deleted Successfully",
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-      error: error,
-    });
-  }
-};
-
-// <----update product---->
-// 1. get product id (URL)
-// 2. if image :
-// 3. New image should be uploadee
-// 4. old image should be deleted
-//  5. final product (database) product image
-//  6. find that image in directory
-//  7. Delete the image
-// 8. Update that product
 
 const updateProduct = async (req, res) => {
   try {
-    //if there is image
+    // No product
+    const product = await productModel.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found',
+      });
+    }
+    // If there is image
     if (req.files && req.files.productImage) {
-      //Destructuring
+      // Destructuring the body
       const { productImage } = req.files;
 
-      //upload image to /public/products folder
-      // 1. Generate new image name (abc.png) -> (21324-abc.png)
+      // Upload image to /public/image
+      // 1. Generate new image name
       const imageName = `${Date.now()}-${productImage.name}`;
 
-      // 2. Make a upload path(/path/upload- directory)
+      // 2. Make a upload path (/path/upload - directory)
       const imageUploadPath = path.join(
         __dirname,
         `../public/products/${imageName}`
       );
 
-      //Move to folder
+      // 3, Move to that directory
       await productImage.mv(imageUploadPath);
 
-      //req.params (id), req.body(updated data : pm, pp, pc, pd), req.files(image)
-      //add new field to req.body (productImage -> name)
-      req.body.productImage = imageName; //image uploaded (generated name)
+      // req.params.id  (id), req.body (productName, productCategory, productDescription, productPrice)
+      req.body.productImage = imageName;
 
-      //if image is uploaded and req.body is assingned
+      // if image is uploaded and req.body is updated
       if (req.body.productImage) {
-        // finding existing product
         const existingProduct = await productModel.findById(req.params.id);
-
-        //searching in the directory/folder
-        const oldImagePath = path.join(
+        imagePath = path.join(
           __dirname,
           `../public/products/${existingProduct.productImage}`
         );
 
-        // delete from file system
-        fs.unlinkSync(oldImagePath);
+        // Delete the existing image
+        fs.unlinkSync(imagePath);
       }
     }
-
-    // update the data
     const updatedProduct = await productModel.findByIdAndUpdate(
       req.params.id,
       req.body
     );
+
     res.status(201).json({
       success: true,
-      message: "Product updated !",
-      product: updatedProduct,
+      message: 'Product updated successfully',
+      updatedProduct: updatedProduct,
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: 'Internal server error',
       error: error,
     });
   }
 };
-// pagination
-const paginationProducts = async (req, res) => {
-  //  page no
-  const PageNo = req.query.page || 1;
-  // per page result
-  const resultPerPage = 3;
 
+const deleteProduct = async (req, res) => {
   try {
-    // find all prodcuts, skip , limit
-    const products = await productModel
-      .find({})
-      .skip((PageNo - 1) * resultPerPage)
-      .limit(resultPerPage);
+    await productModel.findByIdAndDelete(req.params.id);
 
-    // if page 6 is requested, result 0
-    if (products.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "No products found",
-      });
-    }
-    // send  response
     res.status(201).json({
       success: true,
-      message: "Products fetched successfully",
+      message: 'Product deleted successfully',
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error,
+    });
+  }
+};
+
+const getProductsPagination = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = 2;
+
+    const products = await productModel
+      .find({})
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    if (products.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Products not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Products fetched successfully',
       products: products,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).jason({
+    res.status(500).json({
       success: false,
-      message: "Internal Server Error",
+      message: 'Internal server error',
+      error: error,
+    });
+  }
+};
+
+const getProductCount = async (req, res) => {
+  try {
+    const productCount = await productModel.countDocuments({});
+
+    res.status(200).json({
+      success: true,
+      message: 'Product count fetched successfully',
+      productCount: productCount,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error,
     });
   }
 };
@@ -247,8 +255,9 @@ const paginationProducts = async (req, res) => {
 module.exports = {
   createProduct,
   getAllProducts,
-  getSingleProduct,
-  deleteProduct,
+  getOneProduct,
   updateProduct,
-  paginationProducts,
+  deleteProduct,
+  getProductsPagination,
+  getProductCount,
 };
